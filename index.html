@@ -6,8 +6,122 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-  <h1 class="text-3xl font-bold underline">
-    Hello world!
-  </h1>
+    <h1 class="text-3xl font-bold underline">
+        バーコードスキャン
+    </h1>
+    <label for="barcodes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">スキャン結果</label>
+    <button id="open" type="button" class="py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+        カメラを開く
+    </button>
+
+    <br>
+    <textarea id="barcodes" rows="40" cols="40" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="バーコードスキャン結果がここに表示されます..."></textarea>
+    <br>
+    <dialog>
+        <!-- モーダルウィンドウ内のテキストの指定 -->
+        <div id="my_result">***</div>
+        <div id="my_quagga"></div>
+        <!-- モーダルウィンドウ内を閉じるボタンの指定 -->
+        <button id="close" type="button" class="py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+            カメラを閉じる
+        </button>
+    </dialog>
+    <!-- モーダルウィンドウ内を開くボタンの指定 -->
+    <!-- JavaScript -->
+    <script src="https://unpkg.com/@ericblade/quagga2@1.7.4/dist/quagga.min.js"></script>
+    <script>
+        let preBarcode = "";
+        let barcodesEle = document.getElementById('barcodes');
+        let dialog = document.querySelector('dialog'); // dialog（モーダルダイアログ）の宣言
+        let btn_open = document.getElementById('open'); // open（開く）ボタンの宣言
+        let btn_close = document.getElementById('close'); // close（閉じる）ボタンの宣言
+        btn_open.addEventListener('click', function() { 
+            // 開くボタンをクリックした場合の処理
+            dialog.showModal();
+
+            // Quagga
+            Quagga.init({
+                inputStream: {
+                    name : "Live",
+                    type : "LiveStream",
+                    target: document.getElementById("my_quagga")
+                },
+                decoder: {
+                    readers: ["ean_reader"]
+                }
+            }, err=>{
+                if(err){
+                    console.log(err);
+                    return;
+                }
+                Quagga.start();
+            });
+
+            Quagga.onProcessed(result=>{
+                if(result == null) return;
+                if(typeof(result) != "object") return;
+                if(result.boxes == undefined) return;
+                const ctx = Quagga.canvas.ctx.overlay;
+                const canvas = Quagga.canvas.dom.overlay;
+                ctx.clearRect(0, 0, parseInt(canvas.width), parseInt(canvas.height));
+                Quagga.ImageDebug.drawPath(result.box, 
+                    {x: 0, y: 1}, ctx, {color: "blue", lineWidth: 5});
+            });
+
+            scanedCodes = []
+            Quagga.onDetected(result=>{
+                scanedCodes.push(result.codeResult.code)
+                CHECK_COUNT = 5
+                if(scanedCodes.length >= CHECK_COUNT)
+                {
+                    isOk = true
+                    code = scanedCodes[0]
+                    for(let i=1; i<scanedCodes.length; i++)
+                    {
+                        if(code !== scanedCodes[i])
+                        {
+                            isOk = false
+                            scanedCodes = []
+                            break
+                        }
+                    }
+                    if(isOk)
+                    {
+                        if(preBarcode == result.codeResult.code) return;
+                        barcodesEle.value = barcodesEle.value + (result.codeResult.code) + '\n';
+                        preBarcode = result.codeResult.code;
+                        scanedCodes = [];
+                        return;
+                    }
+                }
+            });
+        }, false);
+
+        btn_close.addEventListener('click', function() {
+            // 閉じるボタンをクリックした場合の処理
+            Quagga.stop();
+            dialog.close();
+        }, false);
+    </script>
+    <style>
+        #my_quagga{ 
+            width: 320px; height: 240px; 
+            margin: 5px; padding: 0px;
+            position: relative;
+            background-color: silver;
+        }
+
+        #my_quagga video{
+            width: 100%; height: 100%; 
+            position: absolute;
+            top: 0px; left: 0px;
+        }
+
+        #my_quagga canvas{
+            width: 100%; height: 100%; 
+            position: absolute;
+            top: 0px; left: 0px;
+        }
+    </style>
 </body>
 </html>
