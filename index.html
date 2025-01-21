@@ -88,6 +88,7 @@
                     if(isOk)
                     {
                         if(preBarcode == result.codeResult.code) return;
+                        my_result.innerText = result.codeResult.code;
                         barcodesEle.value = barcodesEle.value + (result.codeResult.code) + '\n';
                         preBarcode = result.codeResult.code;
                         scanedCodes = [];
