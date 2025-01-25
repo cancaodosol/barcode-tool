@@ -179,7 +179,18 @@
                 addSpanResultToSheet();
             }, false);
         }
-        initBarcodeSpanModal();
+
+        function load(){
+            // バーコードスキャンモーダルの初期設定
+            initBarcodeSpanModal();
+
+            // URLからスマレジAPI情報を設定
+            const url = new URL(window.location.href);
+            const params = url.searchParams;
+            if(params.has("xcontractid")) xcontractid.value = params.get("xcontractid");
+            if(params.has("xaccesstoken")) xaccesstoken.value = params.get("xaccesstoken");
+        }
+        load();
     </script>
     <style>
         #my_quagga{ 
