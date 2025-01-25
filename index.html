@@ -28,19 +28,44 @@
     <br>
     <textarea id="barcodes" rows="40" cols="40" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="バーコードスキャン結果がここに表示されます..."></textarea>
     <br>
-    <dialog>
+    <dialog class="p-2">
         <!-- モーダルウィンドウ内のテキストの指定 -->
-        <div id="my_result">***</div>
+        <div class="px-2">商品コード：<span id="span_result" class="px-2">***</span></div>
+        <div class="px-2">商品名　　：<span id="span_product_name" class="px-2">***</span></div>
+        <div class="px-2">価格　　　：<span id="span_product_price" class="px-2">***</span></div>
         <div id="my_quagga"></div>
         <!-- モーダルウィンドウ内を閉じるボタンの指定 -->
-        <button id="close" type="button" class="py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
-            カメラを閉じる
-        </button>
+        <div class="absolute top-0 right-0">
+            <button id="close" type="button" class="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white hover:bg-gray-100 hover:text-blue-700 focus:ring-1 focus:ring-gray-100">
+                ×
+            </button>
+        </div>
+        <div class="flex flex-wrap">
+            <div class="grow">
+                <label for="count_for_span" class="block text-sm font-medium text-gray-900 dark:text-white">個数</label>
+                <input type="number" id="count_for_span" class="bg-gray-50 border border-gray-300 text-gray-900 w-full text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+            </div>
+            <div>
+                <div class="flex items-center px-2">
+                    <input id="auto_add_checkbox" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                    <label for="auto_add_checkbox" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">自動追加</label>
+                </div>
+                <button id="btn_add_sheet" type="button" class="py-1 px-2 mx-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">
+                    シートに追加
+                </button>
+            </div>
+        </div>
     </dialog>
     <!-- モーダルウィンドウ内を開くボタンの指定 -->
     <!-- JavaScript -->
     <script src="https://unpkg.com/@ericblade/quagga2@1.7.4/dist/quagga.min.js"></script>
     <script>
+        function clearScanResult() {
+            span_result.innerText = "***";
+            span_product_name.innerText = "***";
+            span_product_price.innerText = "***";
+            count_for_span.value = "";
+        }
         function displayProductByProductCode(productCode) {
             const url = "https://webapi.smaregi.jp/access/";
             const opt = {
@@ -56,10 +81,17 @@
             let result = fetch(url, opt)
                 .then(res => res.json())
                 .then(data => {
-                    console.log(data.total_count);
-                    console.log(data.result[0].productName);
+                    span_product_name.innerText = data.result[0].productName;
+                    span_product_price.innerText = data.result[0].price + "円(税込)";
+                    if(auto_add_checkbox.checked) addSpanResultToSheet();
                 })
                 .catch(err => console.log(err));
+        }
+
+        function addSpanResultToSheet() {
+            let row = span_result.innerText + "," + span_product_name.innerText;
+            if(count_for_span.value != "") row = row + "," + count_for_span.value + "ｺ"
+            barcodesEle.value = barcodesEle.value + row + '\n';
         }
 
         let preBarcode = "";
@@ -120,8 +152,7 @@
                     if(isOk)
                     {
                         if(preBarcode == result.codeResult.code) return;
-                        my_result.innerText = result.codeResult.code;
-                        barcodesEle.value = barcodesEle.value + (result.codeResult.code) + '\n';
+                        span_result.innerText = result.codeResult.code;
                         preBarcode = result.codeResult.code;
                         displayProductByProductCode(result.codeResult.code);
                         scanedCodes = [];
@@ -133,8 +164,13 @@
 
         btn_close.addEventListener('click', function() {
             // 閉じるボタンをクリックした場合の処理
+            clearScanResult();
             Quagga.stop();
             dialog.close();
+        }, false);
+
+        btn_add_sheet.addEventListener('click', function() {
+            addSpanResultToSheet();
         }, false);
     </script>
     <style>
