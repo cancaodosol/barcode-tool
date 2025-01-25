@@ -9,8 +9,19 @@
     <h1 class="text-3xl font-bold underline">
         バーコードスキャン
     </h1>
-    <label for="barcodes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">スキャン結果</label>
-    <button id="open" type="button" class="py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+    <label for="barcodes" class="block text-sm mt-2 font-medium text-gray-900 dark:text-white">スマレジAPI情報</label>
+    
+    <div class="flex flex-wrap gap-1 px-2">
+        <div>
+            <label for="xcontractid" class="block text-sm font-medium text-gray-900 dark:text-white">X-contract-id</label>
+            <input type="text" id="xcontractid" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+        </div>
+        <div>
+            <label for="xaccesstoken" class="block text-sm font-medium text-gray-900 dark:text-white">X-access-token</label>
+            <input type="text" id="xaccesstoken" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+        </div>
+    </div>
+    <button id="open" type="button" class="py-2.5 px-5 me-2 my-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
         カメラを開く
     </button>
 
@@ -30,6 +41,27 @@
     <!-- JavaScript -->
     <script src="https://unpkg.com/@ericblade/quagga2@1.7.4/dist/quagga.min.js"></script>
     <script>
+        function displayProductByProductCode(productCode) {
+            const url = "https://webapi.smaregi.jp/access/";
+            const opt = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-contract-id": xcontractid.value,
+                    "X-access-token": xaccesstoken.value
+                },
+                body: 'proc_name=product_ref&params={"conditions":[{"productCode":"'+ productCode +'"}],"table_name":"Product"}'
+            };
+
+            let result = fetch(url, opt)
+                .then(res => res.json())
+                .then(data => {
+                    console.log(data.total_count);
+                    console.log(data.result[0].productName);
+                })
+                .catch(err => console.log(err));
+        }
+
         let preBarcode = "";
         let barcodesEle = document.getElementById('barcodes');
         let dialog = document.querySelector('dialog'); // dialog（モーダルダイアログ）の宣言
@@ -91,6 +123,7 @@
                         my_result.innerText = result.codeResult.code;
                         barcodesEle.value = barcodesEle.value + (result.codeResult.code) + '\n';
                         preBarcode = result.codeResult.code;
+                        displayProductByProductCode(result.codeResult.code);
                         scanedCodes = [];
                         return;
                     }
