@@ -6,28 +6,27 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-    <h1 class="text-3xl font-bold underline">
-        バーコードスキャン
-    </h1>
-    <label for="barcodes" class="block text-sm mt-2 font-medium text-gray-900 dark:text-white">スマレジAPI情報</label>
-    
-    <div class="flex flex-wrap gap-1 px-2">
-        <div>
-            <label for="xcontractid" class="block text-sm font-medium text-gray-900 dark:text-white">X-contract-id</label>
-            <input type="text" id="xcontractid" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+    <div class="p-2">
+        <h1 class="text-3xl font-bold underline">
+            バーコードスキャン
+        </h1>
+        <label for="barcodes" class="block text-sm mt-2 font-medium text-gray-900 dark:text-white">スマレジAPI情報</label>
+        
+        <div class="flex flex-wrap gap-1 px-2">
+            <div>
+                <label for="xcontractid" class="block text-sm font-medium text-gray-900 dark:text-white">X-contract-id</label>
+                <input type="text" id="xcontractid" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+            </div>
+            <div>
+                <label for="xaccesstoken" class="block text-sm font-medium text-gray-900 dark:text-white">X-access-token</label>
+                <input type="text" id="xaccesstoken" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+            </div>
         </div>
-        <div>
-            <label for="xaccesstoken" class="block text-sm font-medium text-gray-900 dark:text-white">X-access-token</label>
-            <input type="text" id="xaccesstoken" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
-        </div>
+        <button id="open" type="button" class="py-2.5 px-5 me-2 my-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+            カメラを開く
+        </button>
+        <textarea id="barcodes" rows="40" cols="40" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="バーコードスキャン結果をここに表示します..."></textarea>
     </div>
-    <button id="open" type="button" class="py-2.5 px-5 me-2 my-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
-        カメラを開く
-    </button>
-
-    <br>
-    <textarea id="barcodes" rows="40" cols="40" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="バーコードスキャン結果がここに表示されます..."></textarea>
-    <br>
     <dialog class="p-2">
         <!-- モーダルウィンドウ内のテキストの指定 -->
         <div class="px-2">商品コード：<span id="span_result" class="px-2">***</span></div>
@@ -89,8 +88,9 @@
         }
 
         function addSpanResultToSheet() {
-            let row = span_result.innerText + "," + span_product_name.innerText;
-            if(count_for_span.value != "") row = row + "," + count_for_span.value + "ｺ"
+            let row = span_result.innerText;
+            if(span_product_name.innerText !== "***") row = row + "," + span_product_name.innerText
+            if(count_for_span.value !== "") row = row + "," + count_for_span.value + "ｺ"
             barcodesEle.value = barcodesEle.value + row + '\n';
         }
 
