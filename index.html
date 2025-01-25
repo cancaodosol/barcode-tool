@@ -59,12 +59,15 @@
     <!-- JavaScript -->
     <script src="https://unpkg.com/@ericblade/quagga2@1.7.4/dist/quagga.min.js"></script>
     <script>
+        // スキャン結果の表示をクリア
         function clearScanResult() {
             span_result.innerText = "***";
             span_product_name.innerText = "***";
             span_product_price.innerText = "***";
             count_for_span.value = "";
         }
+
+        // スキャンした商品コードを元にスマレジからデータ参照し、画面に表示
         function displayProductByProductCode(productCode) {
             const url = "https://webapi.smaregi.jp/access/";
             const opt = {
@@ -87,91 +90,96 @@
                 .catch(err => console.log(err));
         }
 
+        // スキャン結果をシートに追加
         function addSpanResultToSheet() {
+            const barcodesEle = document.getElementById('barcodes');
             let row = span_result.innerText;
             if(span_product_name.innerText !== "***") row = row + "," + span_product_name.innerText
             if(count_for_span.value !== "") row = row + "," + count_for_span.value + "ｺ"
             barcodesEle.value = barcodesEle.value + row + '\n';
         }
 
-        let preBarcode = "";
-        let barcodesEle = document.getElementById('barcodes');
-        let dialog = document.querySelector('dialog'); // dialog（モーダルダイアログ）の宣言
-        let btn_open = document.getElementById('open'); // open（開く）ボタンの宣言
-        let btn_close = document.getElementById('close'); // close（閉じる）ボタンの宣言
-        btn_open.addEventListener('click', function() { 
-            // 開くボタンをクリックした場合の処理
-            dialog.showModal();
+        // バーコードスキャンモーダルの初期設定
+        function initBarcodeSpanModal() {
+            let preBarcode = "";
+            let dialog = document.querySelector('dialog'); // dialog（モーダルダイアログ）の宣言
+            let btn_open = document.getElementById('open'); // open（開く）ボタンの宣言
+            let btn_close = document.getElementById('close'); // close（閉じる）ボタンの宣言
+            btn_open.addEventListener('click', function() { 
+                // 開くボタンをクリックした場合の処理
+                dialog.showModal();
 
-            // Quagga
-            Quagga.init({
-                inputStream: {
-                    name : "Live",
-                    type : "LiveStream",
-                    target: document.getElementById("my_quagga")
-                },
-                decoder: {
-                    readers: ["ean_reader"]
-                }
-            }, err=>{
-                if(err){
-                    console.log(err);
-                    return;
-                }
-                Quagga.start();
-            });
-
-            Quagga.onProcessed(result=>{
-                if(result == null) return;
-                if(typeof(result) != "object") return;
-                if(result.boxes == undefined) return;
-                const ctx = Quagga.canvas.ctx.overlay;
-                const canvas = Quagga.canvas.dom.overlay;
-                ctx.clearRect(0, 0, parseInt(canvas.width), parseInt(canvas.height));
-                Quagga.ImageDebug.drawPath(result.box, 
-                    {x: 0, y: 1}, ctx, {color: "blue", lineWidth: 5});
-            });
-
-            scanedCodes = []
-            Quagga.onDetected(result=>{
-                scanedCodes.push(result.codeResult.code)
-                CHECK_COUNT = 5
-                if(scanedCodes.length >= CHECK_COUNT)
-                {
-                    isOk = true
-                    code = scanedCodes[0]
-                    for(let i=1; i<scanedCodes.length; i++)
-                    {
-                        if(code !== scanedCodes[i])
-                        {
-                            isOk = false
-                            scanedCodes = []
-                            break
-                        }
+                // Quagga
+                Quagga.init({
+                    inputStream: {
+                        name : "Live",
+                        type : "LiveStream",
+                        target: document.getElementById("my_quagga")
+                    },
+                    decoder: {
+                        readers: ["ean_reader"]
                     }
-                    if(isOk)
-                    {
-                        if(preBarcode == result.codeResult.code) return;
-                        span_result.innerText = result.codeResult.code;
-                        preBarcode = result.codeResult.code;
-                        displayProductByProductCode(result.codeResult.code);
-                        scanedCodes = [];
+                }, err=>{
+                    if(err){
+                        console.log(err);
                         return;
                     }
-                }
-            });
-        }, false);
+                    Quagga.start();
+                });
 
-        btn_close.addEventListener('click', function() {
-            // 閉じるボタンをクリックした場合の処理
-            clearScanResult();
-            Quagga.stop();
-            dialog.close();
-        }, false);
+                Quagga.onProcessed(result=>{
+                    if(result == null) return;
+                    if(typeof(result) != "object") return;
+                    if(result.boxes == undefined) return;
+                    const ctx = Quagga.canvas.ctx.overlay;
+                    const canvas = Quagga.canvas.dom.overlay;
+                    ctx.clearRect(0, 0, parseInt(canvas.width), parseInt(canvas.height));
+                    Quagga.ImageDebug.drawPath(result.box, 
+                        {x: 0, y: 1}, ctx, {color: "blue", lineWidth: 5});
+                });
 
-        btn_add_sheet.addEventListener('click', function() {
-            addSpanResultToSheet();
-        }, false);
+                scanedCodes = []
+                Quagga.onDetected(result=>{
+                    scanedCodes.push(result.codeResult.code)
+                    CHECK_COUNT = 5
+                    if(scanedCodes.length >= CHECK_COUNT)
+                    {
+                        isOk = true
+                        code = scanedCodes[0]
+                        for(let i=1; i<scanedCodes.length; i++)
+                        {
+                            if(code !== scanedCodes[i])
+                            {
+                                isOk = false
+                                scanedCodes = []
+                                break
+                            }
+                        }
+                        if(isOk)
+                        {
+                            if(preBarcode == result.codeResult.code) return;
+                            span_result.innerText = result.codeResult.code;
+                            preBarcode = result.codeResult.code;
+                            displayProductByProductCode(result.codeResult.code);
+                            scanedCodes = [];
+                            return;
+                        }
+                    }
+                });
+            }, false);
+
+            btn_close.addEventListener('click', function() {
+                // 閉じるボタンをクリックした場合の処理
+                clearScanResult();
+                Quagga.stop();
+                dialog.close();
+            }, false);
+
+            btn_add_sheet.addEventListener('click', function() {
+                addSpanResultToSheet();
+            }, false);
+        }
+        initBarcodeSpanModal();
     </script>
     <style>
         #my_quagga{ 
