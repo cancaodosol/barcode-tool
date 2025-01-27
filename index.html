@@ -59,9 +59,14 @@
     <!-- JavaScript -->
     <script src="https://unpkg.com/@ericblade/quagga2@1.7.4/dist/quagga.min.js"></script>
     <script>
+        let preBarcode = "";
+        let scanedCodes = [];
+
         // スキャン結果の表示をクリア
         function clearScanResult() {
+            preBarcode = "";
             span_result.innerText = "***";
+            span_product_sku.innerText = "***";
             span_product_name.innerText = "***";
             span_product_price.innerText = "***";
             count_for_span.value = "";
@@ -101,7 +106,6 @@
 
         // バーコードスキャンモーダルの初期設定
         function initBarcodeSpanModal() {
-            let preBarcode = "";
             let dialog = document.querySelector('dialog'); // dialog（モーダルダイアログ）の宣言
             let btn_open = document.getElementById('open'); // open（開く）ボタンの宣言
             let btn_close = document.getElementById('close'); // close（閉じる）ボタンの宣言
@@ -138,7 +142,6 @@
                         {x: 0, y: 1}, ctx, {color: "blue", lineWidth: 5});
                 });
 
-                scanedCodes = []
                 Quagga.onDetected(result=>{
                     scanedCodes.push(result.codeResult.code)
                     CHECK_COUNT = 5
