@@ -30,6 +30,7 @@
     <dialog class="p-2 w-full">
         <!-- モーダルウィンドウ内のテキストの指定 -->
         <div class="px-2">商品コード：<span id="span_result" class="px-2">***</span></div>
+        <div class="px-2">商品SKU 　：<span id="span_product_sku" class="px-2">***</span></div>
         <div class="px-2">商品名　　：<span id="span_product_name" class="px-2">***</span></div>
         <div class="px-2">価格　　　：<span id="span_product_price" class="px-2">***</span></div>
         <div id="my_quagga"></div>
@@ -88,6 +89,7 @@
             let result = fetch(url, opt)
                 .then(res => res.json())
                 .then(data => {
+                    span_product_sku.innerText = data.result[0].supplierProductNo;
                     span_product_name.innerText = data.result[0].productName;
                     span_product_price.innerText = data.result[0].price + "円(税込)";
                     if(auto_add_checkbox.checked) addSpanResultToSheet();
@@ -99,8 +101,11 @@
         function addSpanResultToSheet() {
             const barcodesEle = document.getElementById('barcodes');
             let row = span_result.innerText;
-            if(span_product_name.innerText !== "***") row = row + "," + span_product_name.innerText
-            if(count_for_span.value !== "") row = row + "," + count_for_span.value + "ｺ"
+            if(span_product_name.innerText !== "***"){
+                row = row + "," + span_product_sku.innerText;
+                row = row + "," + span_product_name.innerText;
+            }
+            if(count_for_span.value !== "") row = row + "," + count_for_span.value + "ｺ";
             barcodesEle.value = barcodesEle.value + row + '\n';
         }
 
