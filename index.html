@@ -22,9 +22,14 @@
                 <input type="text" id="xaccesstoken" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
             </div>
         </div>
-        <button id="open" type="button" class="py-2.5 px-5 me-2 my-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
-            カメラを開く
-        </button>
+        <div class="flex flex-wrap gap-1 px-2">
+            <button id="open" type="button" class="py-2.5 px-5 me-2 my-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                カメラを開く
+            </button>
+            <button id="btn_clear" type="button" class="py-2.5 px-5 me-2 my-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                クリア
+            </button>
+        </div>
         <textarea id="barcodes" rows="40" cols="40" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="バーコードスキャン結果をここに表示します..."></textarea>
     </div>
     <dialog class="p-2 w-full" style="width: 350px">
@@ -197,6 +202,12 @@
             const params = url.searchParams;
             if(params.has("xcontractid")) xcontractid.value = params.get("xcontractid");
             if(params.has("xaccesstoken")) xaccesstoken.value = params.get("xaccesstoken");
+
+            // クリアボタンのクリック処理
+            btn_clear.addEventListener('click', function() {
+                const barcodesEle = document.getElementById('barcodes');
+                barcodesEle.value = "";
+            }, false);
         }
         load();
     </script>
